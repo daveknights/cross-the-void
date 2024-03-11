@@ -1,55 +1,60 @@
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Animated, Dimensions } from 'react-native';
 
-const halfUnit = ((Dimensions.get('window').width - 40) / 4) / 2;
-const fullUnit = (Dimensions.get('window').width - 40) / 4;
-const unit = (Dimensions.get('window').width - 40) / 20;
+const halfWUnit = ((Dimensions.get('window').width) / 4) / 2;
+const fullWUnit = (Dimensions.get('window').width) / 4;
+const halfHUnit = ((Dimensions.get('window').height) / 9) / 2;
+const fullHUnit = (Dimensions.get('window').height) / 9;
+const playerSize = 50;
+const wOffset = playerSize / 2;
+const hOffset = -(fullHUnit - 50) / 2;
+// Temp characters
 const player = '(O:';
 const opponent = ')O:';
 
 const platforms = {
-    start: {pos: {x: (fullUnit * 2) - 25, y: -40}},
+    finish: {pos: {x: (fullWUnit * 2) - wOffset, y: -((fullHUnit * 4) + halfHUnit + hOffset)}},
     row1: {
-        p1: {x: halfUnit - 25, y: -530},
-        p2: {x: fullUnit + halfUnit - 25, y: -530},
-        p3: {x: (fullUnit * 2) + halfUnit - 25, y: -530},
-        p4: {x: (fullUnit * 3) + halfUnit - 25, y: -530},
+        p1: {x: halfWUnit - wOffset, y: -((fullHUnit * 3) + halfHUnit + hOffset)},
+        p2: {x: fullWUnit + halfWUnit - wOffset, y: -((fullHUnit * 3) + halfHUnit + hOffset)},
+        p3: {x: (fullWUnit * 2) + halfWUnit - wOffset, y: -((fullHUnit * 3) + halfHUnit + hOffset)},
+        p4: {x: (fullWUnit * 3) + halfWUnit - wOffset, y: -((fullHUnit * 3) + halfHUnit + hOffset)},
     },
     row2: {
-        p5: {x: fullUnit - 25, y: -460},
-        p6: {x: (fullUnit * 2) - 25, y: -460},
-        p7: {x: (fullUnit * 3) - 25, y: -460},
+        p5: {x: fullWUnit - wOffset, y: -((fullHUnit * 2) + halfHUnit + hOffset)},
+        p6: {x: (fullWUnit * 2) - wOffset, y: -((fullHUnit * 2) + halfHUnit + hOffset)},
+        p7: {x: (fullWUnit * 3) - wOffset, y: -((fullHUnit * 2) + halfHUnit + hOffset)},
     },
     row3: {
-        p8: {x: halfUnit - 25, y: -390},
-        p9: {x: fullUnit + halfUnit - 25, y: -390},
-        p10: {x: (fullUnit * 2) + halfUnit - 25, y: -390},
-        p11: {x: (fullUnit * 3) + halfUnit - 25, y: -390},
+        p8: {x: halfWUnit - wOffset, y: -(fullHUnit + halfHUnit + hOffset)},
+        p9: {x: fullWUnit + halfWUnit - wOffset, y: -(fullHUnit + halfHUnit + hOffset)},
+        p10: {x: (fullWUnit * 2) + halfWUnit - wOffset, y: -(fullHUnit + halfHUnit + hOffset)},
+        p11: {x: (fullWUnit * 3) + halfWUnit - wOffset, y: -(fullHUnit + halfHUnit + hOffset)},
     },
     row4: {
-        p12: {x: fullUnit - 25, y: -320},
-        p13: {x: (fullUnit * 2) - 25, y: -320},
-        p14: {x: (fullUnit * 3) - 25, y: -320},
+        p12: {x: fullWUnit - wOffset, y: -(halfHUnit + hOffset)},
+        p13: {x: (fullWUnit * 2) - wOffset, y: -(halfHUnit + hOffset)},
+        p14: {x: (fullWUnit * 3) - wOffset, y: -(halfHUnit + hOffset)},
     },
     row5: {
-        p15: {x: halfUnit - 25, y: -250},
-        p16: {x: fullUnit + halfUnit - 25, y: -250},
-        p17: {x: (fullUnit * 2) + halfUnit - 25, y: -250},
-        p18: {x: (fullUnit * 3) + halfUnit - 25, y: -250},
+        p15: {x: halfWUnit - wOffset, y: fullHUnit - (halfHUnit + hOffset)},
+        p16: {x: fullWUnit + halfWUnit - wOffset, y: fullHUnit - (halfHUnit + hOffset)},
+        p17: {x: (fullWUnit * 2) + halfWUnit - wOffset, y: fullHUnit - (halfHUnit + hOffset)},
+        p18: {x: (fullWUnit * 3) + halfWUnit - wOffset, y: fullHUnit - (halfHUnit + hOffset)},
     },
     row6: {
-        p19: {x: fullUnit - 25, y: -180},
-        p20: {x: (fullUnit * 2) - 25, y: -180},
-        p21: {x: (fullUnit * 3) - 25, y: -180},
+        p19: {x: fullWUnit - wOffset, y: (fullHUnit * 2) - (halfHUnit + hOffset)},
+        p20: {x: (fullWUnit * 2) - wOffset, y: (fullHUnit * 2) - (halfHUnit + hOffset)},
+        p21: {x: (fullWUnit * 3) - wOffset, y: (fullHUnit * 2) - (halfHUnit + hOffset)},
     },
     row7: {
-        p22: {x: halfUnit - 25, y: -110},
-        p23: {x: fullUnit + halfUnit - 25, y: -110},
-        p24: {x: (fullUnit * 2) + halfUnit - 25, y: -110},
-        p25: {x: (fullUnit * 3) + halfUnit - 25, y: -110},
+        p22: {x: halfWUnit - wOffset, y: (fullHUnit * 3) - (halfHUnit + hOffset)},
+        p23: {x: fullWUnit + halfWUnit - wOffset, y: (fullHUnit * 3) - (halfHUnit + hOffset)},
+        p24: {x: (fullWUnit * 2) + halfWUnit - wOffset, y: (fullHUnit * 3) - (halfHUnit + hOffset)},
+        p25: {x: (fullWUnit * 3) + halfWUnit - wOffset, y: (fullHUnit * 3) - (halfHUnit + hOffset)},
     },
-    finish: {pos: {x: (fullUnit * 2) - 25, y: -600}},
+    start: {pos: {x: (fullWUnit * 2) - wOffset, y: (fullHUnit * 3) + (halfHUnit - hOffset)}},
 }
 
 const validMoves = {
@@ -85,7 +90,7 @@ export default function App() {
     const slide = useRef(new Animated.Value(0)).current;
     const [selectedRow, setSelectedRow] = useState('start');
     const [selectedPlatfom, setSelectedPlatfom] = useState('pos');
-    const [playerPosition, setPlayerPosition] = useState([(fullUnit * 2) - 25, -40]);
+    const [playerPosition, setPlayerPosition] = useState([(fullWUnit * 2) - wOffset, (fullHUnit * 3) + (halfHUnit - hOffset)]);
     const [currentPos, setCurrentPos] = useState('start');
 
     const traverse = () => {
@@ -157,7 +162,7 @@ export default function App() {
             </Animated.View>
             <View style={{...styles.zone, ...styles.startZone}}>
             </View>
-        <StatusBar style="auto" />
+            <StatusBar hidden style="auto" />
         </View>
     );
 }
@@ -166,21 +171,26 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-        padding: 20,
-        paddingTop: 50,
+        height: Dimensions.get('window').height,
+        justifyContent: 'center',
+        padding: 0,
     },
     zone: {
         backgroundColor: 'gold',
-        height: 70,
         justifyContent: 'center',
+        position: 'absolute',
+        width: '100%',
     },
     startZone: {
         backgroundColor: 'grey',
-        transform: [{translateY: -100}],
+        bottom: 0,
+        height: fullHUnit,
     },
     endZone: {
         alignItems: 'center',
-        backgroundColor: 'gold'
+        backgroundColor: 'gold',
+        height: fullHUnit,
+        top: 0,
     },
     gem: {
         backgroundColor: '#c57',
@@ -189,34 +199,35 @@ const styles = StyleSheet.create({
         width: 30,
     },
     void: {
-        transform: [{translateY: -50}],
+        height: fullHUnit * 7,
+        position: 'absolute',
     },
     rowOf3: {
-        paddingLeft: halfUnit,
+        paddingLeft: halfWUnit,
     },
     platformRow: {
         flexDirection: 'row',
     },
     platformWrapper: {
         alignItems: 'center',
-        height: 70,
+        height: fullHUnit,
         justifyContent: 'center',
-        width: fullUnit,
+        width: fullWUnit,
     },
     platform: {
         backgroundColor: 'orange',
         borderRadius: 15,
-        height: 30,
-        width: 30,
+        height: 40,
+        width: 40,
     },
     character: {
         alignItems: 'center',
         borderColor: 'black',
         borderWidth: 1,
         borderRadius: 25,
-        height: 50,
+        height: playerSize,
         justifyContent: 'center',
-        width: 50,
+        width: playerSize,
         zIndex: 1,
     },
     characterFace: {
@@ -228,8 +239,8 @@ const styles = StyleSheet.create({
     opponent: {
         backgroundColor: 'red',
         transform: [
-            {translateX: (fullUnit * 2) - 25},
-            {translateY: -60},
+            {translateX: (fullWUnit * 2) - wOffset},
+            {translateY: -((fullHUnit * 3) + halfHUnit - hOffset)},
         ]
     }
 });
