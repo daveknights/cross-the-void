@@ -129,6 +129,8 @@ export default function App() {
             setOpponentPlatform(thisPlatform);
             traverse(slideOpponent, 'opponent');
             setPlayerMoved(false);
+
+            searchOptions.rightAngle ? searchOptions.rightAngle = false : searchOptions.rightAngle = true;
         }
     }, [playerMoved]);
 
