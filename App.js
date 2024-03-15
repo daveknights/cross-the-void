@@ -75,10 +75,19 @@ export default function App() {
     const [playerMoved, setPlayerMoved] = useState(false);
     const [firstMove, setFirstMove] = useState(true);
     const [opponentMoved, setOpponentMoved] = useState(false);
-    const playerComponent = new Animated.Value(0);
-    const opponentComponent = new Animated.Value(0);
-    const slidePlayer = useRef(playerComponent).current;
-    const slideOpponent = useRef(opponentComponent).current;
+    const fadeOut = useRef(new Animated.Value(1)).current;
+    const slidePlayer = useRef(new Animated.Value(0)).current;
+    const slideOpponent = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        if (selectedPlatform !== 'start' && selectedPlatform === opponentPlatform) {
+            Animated.timing(fadeOut, {
+                toValue: 0,
+                duration: 2000,
+                useNativeDriver: true,
+            }).start();
+        }
+    }, [opponentPlatform]);
 
     const traverse = (component, character) => {
         component.setValue(0);
@@ -87,7 +96,7 @@ export default function App() {
             toValue: 1,
             duration: 500,
             useNativeDriver: true,
-        }).start(() => character === 'player' ? setPlayerMoved(true) : setOpponentMoved(true));
+        }).start(() => character === 'player' && setPlayerMoved(true));
     };
 
     useEffect(() => {
@@ -205,7 +214,8 @@ export default function App() {
                         scale: slidePlayer.interpolate({
                             inputRange: [0, 0.5, 1],
                             outputRange: [1, 1.25, 1]})
-                    }]}
+                    }]},
+                opacity: fadeOut
             }}>
                 <Text style={styles.characterFace}>{player}</Text>
             </Animated.View>
