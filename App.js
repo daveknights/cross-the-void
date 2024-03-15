@@ -74,7 +74,8 @@ export default function App() {
     const [currentPos, setCurrentPos] = useState('start');
     const [playerMoved, setPlayerMoved] = useState(false);
     const [firstMove, setFirstMove] = useState(true);
-    const [opponentMoved, setOpponentMoved] = useState(false);
+    // const [opponentMoved, setOpponentMoved] = useState(false);
+    const [total, setTotal] = useState(0);
     const fadeOut = useRef(new Animated.Value(1)).current;
     const slidePlayer = useRef(new Animated.Value(0)).current;
     const slideOpponent = useRef(new Animated.Value(0)).current;
@@ -88,6 +89,19 @@ export default function App() {
             }).start();
         }
     }, [opponentPlatform]);
+
+    useEffect(() => {
+        let addScore;
+
+        if(selectedPlatform === 'endzone') {
+            addScore = setTimeout(() => {
+                setTotal(prev => prev + 1);
+                clearTimeout(addScore);
+            }, 500);
+        }
+
+        return () => clearTimeout(addScore);
+    }, [selectedPlatform]);
 
     const traverse = (component, character) => {
         component.setValue(0);
@@ -171,6 +185,10 @@ export default function App() {
         <View style={styles.container}>
             <TouchableOpacity style={{...styles.zone, ...styles.endZone}} onPress={getGem}>
                 <View style={styles.gem}></View>
+                <View style={styles.gems}>
+                    <View style={{...styles.gem, ...styles.totalGem}}></View>
+                    <Text style={styles.total}>{total}</Text>
+                </View>
             </TouchableOpacity>
             <Animated.View style={{...styles.character, ...styles.opponent,
                 ...{transform: [
@@ -237,7 +255,6 @@ const styles = StyleSheet.create({
     },
     zone: {
         backgroundColor: 'gold',
-        justifyContent: 'center',
         position: 'absolute',
         width: '100%',
     },
@@ -249,14 +266,36 @@ const styles = StyleSheet.create({
     endZone: {
         alignItems: 'center',
         backgroundColor: 'gold',
+        flexDirection: 'row',
         height: fullHUnit,
+        justifyContent: 'center',
         top: 0,
     },
+    gems: {
+        backgroundColor: 'rgba(245, 245, 245, 0.5)',
+        borderRadius: 5,
+        flexDirection: 'row',
+        marginLeft: 'auto',
+        padding: 5,
+        position: 'absolute',
+        right: 15,
+    },
     gem: {
+        alignSelf: 'center',
         backgroundColor: '#c57',
         height: 30,
         transform: [{rotate: '45deg'}],
         width: 30,
+    },
+    totalGem: {
+        transform: [
+            {rotate: '45deg'},
+            {scale: 0.5}
+        ],
+    },
+    total: {
+        fontSize: 20,
+        marginLeft: 5,
     },
     void: {
         height: fullHUnit * 7,
