@@ -164,13 +164,17 @@ export default function App() {
                 <View style={styles.gem}></View>
             </TouchableOpacity>
             <Animated.View style={{...styles.character, ...styles.opponent,
-                ...{transform: [{
-                        translateX: slideOpponent.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [opponentPosition[0], PlatformData[opponentPlatform].x]})},
+                ...{transform: [
+                    {   translateX: slideOpponent.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [opponentPosition[0], PlatformData[opponentPlatform].x]})},
                     {   translateY: slideOpponent.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [opponentPosition[1], rowData[opponentRow].opponentY]})
+                            inputRange: [0, 1],
+                            outputRange: [opponentPosition[1], rowData[opponentRow].opponentY]})},
+                    {
+                        scale: slideOpponent.interpolate({
+                            inputRange: [0, 0.5, 1],
+                            outputRange: [1, 1.25, 1]})
                     }]}
             }}>
                 <Text style={styles.characterFace}>{opponent}</Text>
@@ -190,13 +194,17 @@ export default function App() {
                 })}
             </View>
             <Animated.View style={{...styles.character, ...styles.player,
-                ...{transform: [{
-                        translateX: slidePlayer.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [playerPosition[0], PlatformData[selectedPlatform].x]})},
+                ...{transform: [
+                    {   translateX: slidePlayer.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [playerPosition[0], PlatformData[selectedPlatform].x]})},
                     {   translateY: slidePlayer.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [playerPosition[1], rowData[selectedRow].playerY]})
+                            inputRange: [0, 1],
+                            outputRange: [playerPosition[1], rowData[selectedRow].playerY]})},
+                    {
+                        scale: slidePlayer.interpolate({
+                            inputRange: [0, 0.5, 1],
+                            outputRange: [1, 1.25, 1]})
                     }]}
             }}>
                 <Text style={styles.characterFace}>{player}</Text>
