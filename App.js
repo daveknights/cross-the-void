@@ -77,6 +77,7 @@ export default function App() {
     // const [opponentMoved, setOpponentMoved] = useState(false);
     const [total, setTotal] = useState(0);
     const fadeOut = useRef(new Animated.Value(1)).current;
+    const slideGem = useRef(new Animated.Value(0)).current;
     const slidePlayer = useRef(new Animated.Value(0)).current;
     const slideOpponent = useRef(new Animated.Value(0)).current;
 
@@ -95,8 +96,14 @@ export default function App() {
 
         if(selectedPlatform === 'endzone') {
             addScore = setTimeout(() => {
-                setTotal(prev => prev + 1);
-                clearTimeout(addScore);
+                Animated.timing(slideGem, {
+                    toValue: 1,
+                    duration: 500,
+                    useNativeDriver: true,
+                }).start(() =>{
+                    setTotal(prev => prev + 1);
+                    clearTimeout(addScore);
+                });
             }, 500);
         }
 
@@ -184,14 +191,25 @@ export default function App() {
     return (
         <View style={styles.container}>
             <TouchableOpacity style={{...styles.zone, ...styles.endZone}} onPress={getGem}>
-                <View style={styles.gem}></View>
+                <Animated.View style={{...styles.gem,
+                    transform: [
+                        {   translateX: slideGem.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0, (Dimensions.get('window').width / 2) - 52]})
+                        },
+                        {   scale: slideGem.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [1, 0.5]})
+                        },
+                        {   rotate: '45deg'}]
+                }}></Animated.View>
                 <View style={styles.gems}>
                     <View style={{...styles.gem, ...styles.totalGem}}></View>
                     <Text style={styles.total}>{total}</Text>
                 </View>
             </TouchableOpacity>
             <Animated.View style={{...styles.character, ...styles.opponent,
-                ...{transform: [
+                    transform: [
                     {   translateX: slideOpponent.interpolate({
                             inputRange: [0, 1],
                             outputRange: [opponentPosition[0], PlatformData[opponentPlatform].x]})},
@@ -202,7 +220,7 @@ export default function App() {
                         scale: slideOpponent.interpolate({
                             inputRange: [0, 0.5, 1],
                             outputRange: [1, 1.25, 1]})
-                    }]}
+                    }]
             }}>
                 <Text style={styles.characterFace}>{opponent}</Text>
             </Animated.View>
@@ -221,7 +239,7 @@ export default function App() {
                 })}
             </View>
             <Animated.View style={{...styles.character, ...styles.player,
-                ...{transform: [
+                    transform: [
                     {   translateX: slidePlayer.interpolate({
                             inputRange: [0, 1],
                             outputRange: [playerPosition[0], PlatformData[selectedPlatform].x]})},
@@ -232,7 +250,7 @@ export default function App() {
                         scale: slidePlayer.interpolate({
                             inputRange: [0, 0.5, 1],
                             outputRange: [1, 1.25, 1]})
-                    }]},
+                    }],
                 opacity: fadeOut
             }}>
                 <Text style={styles.characterFace}>{player}</Text>
@@ -284,7 +302,6 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         backgroundColor: '#c57',
         height: 30,
-        transform: [{rotate: '45deg'}],
         width: 30,
     },
     totalGem: {
