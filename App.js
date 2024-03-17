@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Animated, Dimensions } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, Animated, Dimensions, ImageBackground, Image } from 'react-native';
 import { Grid, Astar } from "fast-astar";
 
 const halfWUnit = ((Dimensions.get('window').width) / 4) / 2;
@@ -189,101 +189,109 @@ export default function App() {
     };
 
     return (
-        <View style={styles.container}>
-            <TouchableOpacity style={{...styles.zone, ...styles.endZone}} onPress={getGem}>
-                <Animated.View style={{...styles.gem,
-                    transform: [
-                        {   translateX: slideGem.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [0, (Dimensions.get('window').width / 2) - 52]})
-                        },
-                        {   scale: slideGem.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [1, 0.5]})
-                        },
-                        {   rotate: '45deg'}]
-                }}></Animated.View>
-                <View style={styles.gems}>
-                    <View style={{...styles.gem, ...styles.totalGem}}></View>
-                    <Text style={styles.total}>{total}</Text>
+        <ImageBackground source={require('./assets/space-bg.png')} resizeMode="cover" style={styles.imageBG}>
+            <View style={styles.container}>
+                <View style={styles.void}>
+                    {Object.entries(rowData).map(([row, data]) => {
+                        const rowSize = data.platforms && data.platforms.length % 2 === 0 ? 'rowOf4' : 'rowOf3';
+                        return (data.platforms && row !== 'start' && row!== 'finish') && <View key={row} style={{...styles.platformRow, ...styles[rowSize]}}>
+                            {
+                                data.platforms.map(pNum => {
+                                    return <TouchableOpacity key={pNum} style={styles.platformWrapper} onPress={() => movePlayer(row, pNum)}>
+                                        <Image source={require('./assets/space-platform.png')} style={styles.platform}></Image>
+                                    </TouchableOpacity>;
+                                })
+                            }
+                        </View>
+                    })}
                 </View>
-            </TouchableOpacity>
-            <Animated.View style={{...styles.character, ...styles.opponent,
-                    transform: [
-                    {   translateX: slideOpponent.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [opponentPosition[0], PlatformData[opponentPlatform].x]})},
-                    {   translateY: slideOpponent.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [opponentPosition[1], rowData[opponentRow].opponentY]})},
-                    {
-                        scale: slideOpponent.interpolate({
-                            inputRange: [0, 0.5, 1],
-                            outputRange: [1, 1.25, 1]})
-                    }]
-            }}>
-                <Text style={styles.characterFace}>{opponent}</Text>
-            </Animated.View>
-            <View style={styles.void}>
-                {Object.entries(rowData).map(([row, data]) => {
-                    const rowSize = data.platforms && data.platforms.length % 2 === 0 ? 'rowOf4' : 'rowOf3';
-                    return (data.platforms && row !== 'start' && row!== 'finish') && <View key={row} style={{...styles.platformRow, ...styles[rowSize]}}>
+                <ImageBackground source={require('./assets/space-zone.png')} resizeMode="stretch" style={{...styles.zoneBG, top: 0}}>
+                    <TouchableWithoutFeedback onPress={getGem}>
+                        <View style={{...styles.zone, ...styles.endZone}}>
+                            <Animated.View style={{...styles.gem,
+                                transform: [
+                                    {   translateX: slideGem.interpolate({
+                                            inputRange: [0, 1],
+                                            outputRange: [0, (Dimensions.get('window').width / 2) - 52]})
+                                    },
+                                    {   scale: slideGem.interpolate({
+                                            inputRange: [0, 1],
+                                            outputRange: [1, 0.5]})
+                                    },
+                                    {   rotate: '45deg'}]
+                            }}></Animated.View>
+                            <View style={styles.gems}>
+                                <View style={{...styles.gem, ...styles.totalGem}}></View>
+                                <Text style={styles.total}>{total}</Text>
+                            </View>
+                        </View>
+                    </TouchableWithoutFeedback>
+                </ImageBackground>
+                <Animated.View style={{...styles.character, ...styles.opponent,
+                        transform: [
+                        {   translateX: slideOpponent.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [opponentPosition[0], PlatformData[opponentPlatform].x]})},
+                        {   translateY: slideOpponent.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [opponentPosition[1], rowData[opponentRow].opponentY]})},
                         {
-                            data.platforms.map(pNum => {
-                                return <TouchableOpacity key={pNum} style={styles.platformWrapper} onPress={() => movePlayer(row, pNum)}>
-                                                                <View style={styles.platform}></View>
-                                                            </TouchableOpacity>;
-                            })
-                        }
-                    </View>
-                })}
+                            scale: slideOpponent.interpolate({
+                                inputRange: [0, 0.5, 1],
+                                outputRange: [1, 1.25, 1]})
+                        }]
+                }}>
+                    <Text style={styles.characterFace}>{opponent}</Text>
+                </Animated.View>
+                <Image source={require('./assets/space-zone.png')} resizeMode="stretch" style={{...styles.zoneBG, ...styles.startZone}}>
+                </Image>
+                <Animated.View style={{...styles.character, ...styles.player,
+                        transform: [
+                        {   translateX: slidePlayer.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [playerPosition[0], PlatformData[selectedPlatform].x]})},
+                        {   translateY: slidePlayer.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [playerPosition[1], rowData[selectedRow].playerY]})},
+                        {
+                            scale: slidePlayer.interpolate({
+                                inputRange: [0, 0.5, 1],
+                                outputRange: [1, 1.25, 1]})
+                        }],
+                    opacity: fadeOut
+                }}>
+                    <Text style={styles.characterFace}>{player}</Text>
+                </Animated.View>
+                <StatusBar hidden style="auto" />
             </View>
-            <Animated.View style={{...styles.character, ...styles.player,
-                    transform: [
-                    {   translateX: slidePlayer.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [playerPosition[0], PlatformData[selectedPlatform].x]})},
-                    {   translateY: slidePlayer.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [playerPosition[1], rowData[selectedRow].playerY]})},
-                    {
-                        scale: slidePlayer.interpolate({
-                            inputRange: [0, 0.5, 1],
-                            outputRange: [1, 1.25, 1]})
-                    }],
-                opacity: fadeOut
-            }}>
-                <Text style={styles.characterFace}>{player}</Text>
-            </Animated.View>
-            <View style={{...styles.zone, ...styles.startZone}}>
-            </View>
-            <StatusBar hidden style="auto" />
-        </View>
+        </ImageBackground>
     );
 }
 
 const styles = StyleSheet.create({
+    imageBG: {
+        flex: 1,
+    },
+    zoneBG: {
+        height: fullHUnit,
+        position: 'absolute',
+        width: Dimensions.get('window').width,
+    },
     container: {
         flex: 1,
-        backgroundColor: '#fff',
         height: Dimensions.get('window').height,
         justifyContent: 'space-between',
         paddingBottom: hOffset,
         paddingTop: hOffset,
     },
-    zone: {
-        backgroundColor: 'gold',
-        position: 'absolute',
-        width: '100%',
-    },
     startZone: {
-        backgroundColor: 'grey',
         bottom: 0,
         height: fullHUnit,
+        position: 'absolute',
+        transform: [{rotate: '180deg'}],
     },
     endZone: {
         alignItems: 'center',
-        backgroundColor: 'gold',
         flexDirection: 'row',
         height: fullHUnit,
         justifyContent: 'center',
@@ -332,10 +340,8 @@ const styles = StyleSheet.create({
         width: fullWUnit,
     },
     platform: {
-        backgroundColor: 'orange',
-        borderRadius: 15,
-        height: 40,
-        width: 40,
+        height: 54,
+        width: 54,
     },
     character: {
         alignItems: 'center',
@@ -345,7 +351,6 @@ const styles = StyleSheet.create({
         height: playerSize,
         justifyContent: 'center',
         width: playerSize,
-        zIndex: 1,
     },
     characterFace: {
         transform: [{rotate: '-90deg'}],
