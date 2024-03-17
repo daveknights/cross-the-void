@@ -69,12 +69,12 @@ export default function App() {
     const [opponentRow, setOpponentRow] = useState('start');
     const [selectedPlatform, setselectedPlatform] = useState('start');
     const [opponentPlatform, setOpponentPlatform] = useState('start');
+    const [platformsDisabled, setPlatformsDisabled] = useState(false);
     const [playerPosition, setPlayerPosition] = useState([(fullWUnit * 2) - wOffset, 0]);
     const [opponentPosition, setOpponentPosition] = useState([(fullWUnit * 2) - wOffset, 0]);
     const [currentPos, setCurrentPos] = useState('start');
     const [playerMoved, setPlayerMoved] = useState(false);
     const [firstMove, setFirstMove] = useState(true);
-    // const [opponentMoved, setOpponentMoved] = useState(false);
     const [total, setTotal] = useState(0);
     const fadeOut = useRef(new Animated.Value(1)).current;
     const slideGem = useRef(new Animated.Value(0)).current;
@@ -117,7 +117,7 @@ export default function App() {
             toValue: 1,
             duration: 500,
             useNativeDriver: true,
-        }).start(() => character === 'player' && setPlayerMoved(true));
+        }).start(() => character === 'player' ? setPlayerMoved(true) : setPlatformsDisabled(false));
     };
 
     useEffect(() => {
@@ -131,7 +131,7 @@ export default function App() {
                 setFirstMove(false);
                 row = 'row1';
             } else {
-                const grid = new Grid(gridSize);;
+                const grid = new Grid(gridSize);
                 setMissingRowPlatforms(grid);
 
                 const astar = new Astar(grid);
@@ -158,7 +158,6 @@ export default function App() {
             setOpponentPosition([PlatformData[opponentPlatform].x, rowData[opponentRow].opponentY]);
             setOpponentPlatform(thisPlatform);
             traverse(slideOpponent, 'opponent');
-            setPlayerMoved(false);
 
             searchOptions.rightAngle ? searchOptions.rightAngle = false : searchOptions.rightAngle = true;
         }
@@ -176,10 +175,8 @@ export default function App() {
     };
 
     const movePlayer = (row, pNum) => {
-        if (!PlatformData[currentPos].validMoves.includes(parseInt(pNum.replace('p', '')))) {
-            return;
-        }
-
+        setPlatformsDisabled(true);
+        setPlayerMoved(false);
         setPlayerPosition([PlatformData[selectedPlatform].x, rowData[selectedRow].playerY]);
         setSelectedRow(row);
         setselectedPlatform(pNum);
@@ -197,7 +194,8 @@ export default function App() {
                         return (data.platforms && row !== 'start' && row!== 'finish') && <View key={row} style={{...styles.platformRow, ...styles[rowSize]}}>
                             {
                                 data.platforms.map(pNum => {
-                                    return <TouchableOpacity key={pNum} style={styles.platformWrapper} onPress={() => movePlayer(row, pNum)}>
+                                    const isDisabled = !PlatformData[currentPos].validMoves.includes(parseInt(pNum.replace('p', ''))) || platformsDisabled;
+                                    return <TouchableOpacity key={pNum} disabled={isDisabled} style={styles.platformWrapper} onPress={() => movePlayer(row, pNum)}>
                                         <Image source={require('./assets/space-platform.png')} style={styles.platform}></Image>
                                     </TouchableOpacity>;
                                 })
