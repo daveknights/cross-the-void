@@ -61,7 +61,7 @@ const PlatformData = {
     p23: {x: fullWUnit + halfWUnit - wOffset, validMoves: [19,20,22,24], mapsTo: [1,6]},
     p24: {x: (fullWUnit * 2) + halfWUnit - wOffset, validMoves: [20,21,23,25], mapsTo: [2,6]},
     p25: {x: (fullWUnit * 3) + halfWUnit - wOffset, validMoves: [21,24], mapsTo: [3,6]},
-    endzone: {x: (fullWUnit * 2) - wOffset}
+    endzone: {x: (fullWUnit * 2) - wOffset, validMoves: [1,2,3,4]}
 };
 
 export default function App() {
@@ -75,7 +75,9 @@ export default function App() {
     const [currentPos, setCurrentPos] = useState('start');
     const [playerMoved, setPlayerMoved] = useState(false);
     const [firstMove, setFirstMove] = useState(true);
+    const [moveCount, setMoveCount] = useState(0);
     const [total, setTotal] = useState(0);
+    const [startZoneEnabled, setStartZoneEnabled] = useState(false);
     const fadeOut = useRef(new Animated.Value(1)).current;
     const slideGem = useRef(new Animated.Value(0)).current;
     const slidePlayer = useRef(new Animated.Value(0)).current;
@@ -123,7 +125,7 @@ export default function App() {
     useEffect(() => {
         let thisPlatform;
 
-        if (playerMoved & selectedPlatform !== 'endzone') {
+        if (playerMoved & selectedPlatform !== 'endzone' & selectedPlatform !== 'start') {
             let row;
 
             if (firstMove) {
@@ -159,7 +161,7 @@ export default function App() {
             setOpponentPlatform(thisPlatform);
             traverse(slideOpponent, 'opponent');
 
-            searchOptions.rightAngle ? searchOptions.rightAngle = false : searchOptions.rightAngle = true;
+            moveCount % 4 === 0 ? searchOptions.rightAngle = false : searchOptions.rightAngle = true;
         }
     }, [playerMoved]);
 
@@ -169,6 +171,25 @@ export default function App() {
             setPlayerPosition([PlatformData[selectedPlatform].x, rowData[selectedRow].playerY]);
             setSelectedRow('finish');
             setselectedPlatform('endzone');
+            setCurrentPos('endzone');
+            setStartZoneEnabled(true);
+
+            traverse(slidePlayer, 'player');
+
+            setOpponentRow('row4');
+            setOpponentPosition([(fullWUnit * 2) - wOffset, rowData[opponentRow].opponentY, fullHUnit * 4]);
+            setOpponentPlatform('p13');
+            traverse(slideOpponent, 'opponent');
+        }
+    };
+
+    const getHome = () => {
+        if (['p22','p23','p24','p25'].includes(selectedPlatform) && startZoneEnabled) {
+            setPlayerMoved(false);
+            setPlayerPosition([PlatformData[selectedPlatform].x, rowData[selectedRow].playerY]);
+            setSelectedRow('start');
+            setselectedPlatform('start');
+            setCurrentPos('start');
 
             traverse(slidePlayer, 'player');
         }
@@ -177,6 +198,7 @@ export default function App() {
     const movePlayer = (row, pNum) => {
         setPlatformsDisabled(true);
         setPlayerMoved(false);
+        setMoveCount(prevCount => prevCount + 1);
         setPlayerPosition([PlatformData[selectedPlatform].x, rowData[selectedRow].playerY]);
         setSelectedRow(row);
         setselectedPlatform(pNum);
@@ -241,8 +263,9 @@ export default function App() {
                 }}>
                     <Text style={styles.characterFace}>{opponent}</Text>
                 </Animated.View>
-                <Image source={require('./assets/space-zone.png')} resizeMode="stretch" style={{...styles.zoneBG, ...styles.startZone}}>
-                </Image>
+                <ImageBackground source={require('./assets/space-zone.png')} resizeMode="stretch" style={{...styles.zoneBG, ...styles.startZone}}>
+                    <TouchableOpacity style={{height: fullHUnit, width: Dimensions.get('window').width}} onPress={getHome}></TouchableOpacity>
+                </ImageBackground>
                 <Animated.View style={{...styles.character, ...styles.player,
                         transform: [
                         {   translateX: slidePlayer.interpolate({
