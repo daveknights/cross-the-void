@@ -35,6 +35,7 @@ const rowData = {
     finish: {playerY: -(fullHUnit * 8)}
 };
 const PlatformData = {
+    opponentStart: {x: halfWUnit - wOffset},
     start: {x: (fullWUnit * 2) - wOffset, validMoves: [22,23,24,25]},
     p1: {x: halfWUnit - wOffset, validMoves: [2, 5], mapsTo: [0,0]},
     p2: {x: fullWUnit + halfWUnit - wOffset, validMoves: [1,3,5,6], mapsTo: [1,0]},
@@ -68,10 +69,10 @@ export default function App() {
     const [selectedRow, setSelectedRow] = useState('start');
     const [opponentRow, setOpponentRow] = useState('start');
     const [selectedPlatform, setselectedPlatform] = useState('start');
-    const [opponentPlatform, setOpponentPlatform] = useState('start');
+    const [opponentPlatform, setOpponentPlatform] = useState('opponentStart');
     const [platformsDisabled, setPlatformsDisabled] = useState(false);
-    const [playerPosition, setPlayerPosition] = useState([(fullWUnit * 2) - wOffset, 0]);
-    const [opponentPosition, setOpponentPosition] = useState([(fullWUnit * 2) - wOffset, 0]);
+    const [playerPosition, setPlayerPosition] = useState([PlatformData.start.x, 0]);
+    const [opponentPosition, setOpponentPosition] = useState([PlatformData.opponentStart.x, 0]);
     const [currentPos, setCurrentPos] = useState('start');
     const [playerMoved, setPlayerMoved] = useState(false);
     const [firstMove, setFirstMove] = useState(true);
@@ -228,20 +229,8 @@ export default function App() {
                 <ImageBackground source={require('./assets/space-zone.png')} resizeMode="stretch" style={{...styles.zoneBG, top: 0}}>
                     <TouchableWithoutFeedback onPress={getGem}>
                         <View style={{...styles.zone, ...styles.endZone}}>
-                            <Animated.View style={{...styles.gem,
-                                transform: [
-                                    {   translateX: slideGem.interpolate({
-                                            inputRange: [0, 1],
-                                            outputRange: [0, (Dimensions.get('window').width / 2) - 52]})
-                                    },
-                                    {   scale: slideGem.interpolate({
-                                            inputRange: [0, 1],
-                                            outputRange: [1, 0.5]})
-                                    },
-                                    {   rotate: '45deg'}]
-                            }}></Animated.View>
+                            <Image  source={require('./assets/gem-box.png')} style={styles.gemBox}></Image>
                             <View style={styles.gems}>
-                                <View style={{...styles.gem, ...styles.totalGem}}></View>
                                 <Text style={styles.total}>{total}</Text>
                             </View>
                         </View>
@@ -327,11 +316,10 @@ const styles = StyleSheet.create({
         position: 'absolute',
         right: 15,
     },
-    gem: {
+    gemBox: {
         alignSelf: 'center',
-        backgroundColor: '#c57',
-        height: 30,
-        width: 30,
+        height: 41,
+        width: 65,
     },
     totalGem: {
         transform: [
